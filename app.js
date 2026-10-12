@@ -1,365 +1,368 @@
 import * as THREE from 'three';
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// Account catalogue data from Goat Funded Trader (approx. prices as of late 2026; always verify on site)
 const accounts = [
-  { id: 1, name: "2-Step GOAT $5K", size: "$5,000", price: 36, type: "2-Step Evaluation", target: "8% / 6%", dailyDD: "4%", maxDD: "10% static", split: "80% (up to 100%)", link: "https://goatfundedtrader.com", desc: "Popular low-cost 2-step challenge. Pass phases to get funded." },
-  { id: 2, name: "1-Step $15K", size: "$15,000", price: 178, type: "1-Step Evaluation", target: "10%", dailyDD: "4%", maxDD: "6% static", split: "80%", link: "https://goatfundedtrader.com", desc: "Fast-track single phase challenge." },
-  { id: 3, name: "Instant GOAT $5K", size: "$5,000", price: 108, type: "Instant Funding", target: "None", dailyDD: "3%", maxDD: "6% trailing", split: "80%", link: "https://app.goatfundedtrader.com/checkout", desc: "Skip evaluation, start trading immediately." },
-  { id: 4, name: "Instant HERO $5K", size: "$5,000", price: 58, type: "Instant Funding", target: "None", dailyDD: "3%", maxDD: "5% trailing", split: "90%", link: "https://goatfundedtrader.com", desc: "Affordable instant option with higher split." },
-  { id: 5, name: "3-Step $10K", size: "$10,000", price: 65, type: "3-Step Evaluation", target: "6% x3", dailyDD: "4%", maxDD: "8% static", split: "80%", link: "https://goatfundedtrader.com", desc: "Multi-phase for consistency builders." },
-  { id: 6, name: "Goat $1 $1K", size: "$1,000", price: 1, type: "Instant Mini", target: "None", dailyDD: "3%", maxDD: "6% trailing", split: "80%", link: "https://help.goatfundedtrader.com/en/articles/11769239-goat-1-model", desc: "Limited $1 entry instant account (max $100 lifetime withdraw, 28-day expiry)." },
-  { id: 7, name: "2-Step GOAT $100K", size: "$100,000", price: 275, type: "2-Step Evaluation", target: "8% / 6%", dailyDD: "4%", maxDD: "10% static", split: "80%", link: "https://goatfundedtrader.com", desc: "Larger capital 2-step challenge." },
-  { id: 8, name: "Instant GOAT $100K", size: "$100,000", price: 503, type: "Instant Funding", target: "None", dailyDD: "3%", maxDD: "6%", split: "80%", link: "https://app.goatfundedtrader.com/checkout", desc: "Direct funded larger account." },
-  { id: 9, name: "Pay Later $25K", size: "$25,000", price: 5, type: "Pay Later", target: "Varies", dailyDD: "3%", maxDD: "Trailing", split: "80%", link: "https://goatfundedtrader.com", desc: "Pay $5 now, rest after passing. Check current activation fees." },
-  { id: 10, name: "2-Step Standard $50K", size: "$50,000", price: 203, type: "2-Step Standard", target: "10% / 5%", dailyDD: "5%", maxDD: "10% static", split: "80%", link: "https://goatfundedtrader.com", desc: "Standard 2-step with higher targets." }
+  { id: 1, name: "2-Step GOAT $5K", size: "$5,000", price: 36, type: "2-Step", target: "8%/6%", dd: "4%/10%", split: "80%", link: "https://goatfundedtrader.com", desc: "Low-cost 2-step challenge." },
+  { id: 2, name: "1-Step $15K", size: "$15,000", price: 178, type: "1-Step", target: "10%", dd: "4%/6%", split: "80%", link: "https://goatfundedtrader.com", desc: "Single-phase fast track." },
+  { id: 3, name: "Instant GOAT $5K", size: "$5,000", price: 108, type: "Instant", target: "None", dd: "3%/6%", split: "80%", link: "https://app.goatfundedtrader.com/checkout", desc: "Skip evaluation." },
+  { id: 4, name: "Instant HERO $5K", size: "$5,000", price: 58, type: "Instant", target: "None", dd: "3%/5%", split: "90%", link: "https://goatfundedtrader.com", desc: "Higher split instant." },
+  { id: 5, name: "3-Step $10K", size: "$10,000", price: 65, type: "3-Step", target: "6%x3", dd: "4%/8%", split: "80%", link: "https://goatfundedtrader.com", desc: "Three-phase consistency." },
+  { id: 6, name: "Goat $1", size: "$1,000", price: 1, type: "Mini Instant", target: "None", dd: "3%/6%", split: "80%", link: "https://help.goatfundedtrader.com/en/articles/11769239-goat-1-model", desc: "$1 entry, limited withdraw." },
+  { id: 7, name: "2-Step GOAT $100K", size: "$100,000", price: 275, type: "2-Step", target: "8%/6%", dd: "4%/10%", split: "80%", link: "https://goatfundedtrader.com", desc: "Larger 2-step." },
+  { id: 8, name: "Instant GOAT $100K", size: "$100,000", price: 503, type: "Instant", target: "None", dd: "3%/6%", split: "80%", link: "https://app.goatfundedtrader.com/checkout", desc: "Direct funded." },
+  { id: 9, name: "Pay Later $25K", size: "$25,000", price: 5, type: "Pay Later", target: "Varies", dd: "3%", split: "80%", link: "https://goatfundedtrader.com", desc: "Pay $5 now." },
+  { id: 10, name: "2-Step Std $50K", size: "$50,000", price: 203, type: "2-Step", target: "10%/5%", dd: "5%/10%", split: "80%", link: "https://goatfundedtrader.com", desc: "Standard targets." }
 ];
 
 let cart = [];
 let currentAccount = null;
 
-// Scene setup
+// Shared premium materials
+const materials = {
+  wall: new THREE.MeshStandardMaterial({ color: 0xf5f0e8, roughness: 0.65, metalness: 0.05 }),
+  wallAlt: new THREE.MeshStandardMaterial({ color: 0xe8e0d5, roughness: 0.6, metalness: 0.05 }),
+  roof: new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.8, metalness: 0.1 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0x88ccff, roughness: 0.05, metalness: 0.1, transmission: 0.9, thickness: 0.2, transparent: true }),
+  wood: new THREE.MeshStandardMaterial({ color: 0x8b6914, roughness: 0.7, metalness: 0.05 }),
+  darkWood: new THREE.MeshStandardMaterial({ color: 0x4a3010, roughness: 0.75, metalness: 0.05 }),
+  metal: new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.3, metalness: 0.8 }),
+  ground: new THREE.MeshStandardMaterial({ color: 0x2d4a2d, roughness: 0.9, metalness: 0.0 }),
+  road: new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85, metalness: 0.1 }),
+  line: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+  desk: new THREE.MeshStandardMaterial({ color: 0x2c2c2c, roughness: 0.4, metalness: 0.6 }),
+  monitor: new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.7, emissive: 0x112244, emissiveIntensity: 0.3 }),
+  chair: new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6, metalness: 0.2 }),
+  card: new THREE.MeshStandardMaterial({ color: 0x1e3a5f, roughness: 0.3, metalness: 0.4 }),
+  carBody: new THREE.MeshPhysicalMaterial({ color: 0xcc0000, roughness: 0.2, metalness: 0.8, clearcoat: 0.5, clearcoatRoughness: 0.1 })
+};
+
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 100, 300);
+scene.background = new THREE.Color(0x0a1520);
+scene.fog = new THREE.FogExp2(0x0a1520, 0.008);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 1.7, 50);
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 500);
+camera.position.set(0, 40, 80);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 
-// Lights
-const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-scene.add(ambient);
-const directional = new THREE.DirectionalLight(0xffffff, 0.8);
-directional.position.set(50, 100, 50);
-directional.castShadow = true;
-directional.shadow.mapSize.width = 2048;
-directional.shadow.mapSize.height = 2048;
-scene.add(directional);
+// Premium lighting
+const hemi = new THREE.HemisphereLight(0x87ceeb, 0x2d4a2d, 0.5);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff5e0, 1.2);
+sun.position.set(60, 80, 40);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 200;
+sun.shadow.camera.left = -80;
+sun.shadow.camera.right = 80;
+sun.shadow.camera.top = 80;
+sun.shadow.camera.bottom = -80;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xa0c0ff, 0.3);
+fill.position.set(-40, 30, -30);
+scene.add(fill);
 
-// Controls
-const controls = new PointerLockControls(camera, document.body);
-scene.add(controls.getObject());
-
-const moveState = { forward: false, backward: false, left: false, right: false };
-const velocity = new THREE.Vector3();
-const direction = new THREE.Vector3();
-
-document.addEventListener('keydown', (e) => {
-  switch (e.code) {
-    case 'KeyW': moveState.forward = true; break;
-    case 'KeyS': moveState.backward = true; break;
-    case 'KeyA': moveState.left = true; break;
-    case 'KeyD': moveState.right = true; break;
-    case 'KeyE': handleInteraction(); break;
-  }
-});
-document.addEventListener('keyup', (e) => {
-  switch (e.code) {
-    case 'KeyW': moveState.forward = false; break;
-    case 'KeyS': moveState.backward = false; break;
-    case 'KeyA': moveState.left = false; break;
-    case 'KeyD': moveState.right = false; break;
-  }
-});
-
-document.body.addEventListener('click', () => {
-  if (!controls.isLocked) controls.lock();
-});
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.maxPolarAngle = Math.PI * 0.48;
+controls.minDistance = 15;
+controls.maxDistance = 180;
+controls.target.set(0, 0, 0);
 
 // Ground
-const groundGeo = new THREE.PlaneGeometry(400, 400);
-const groundMat = new THREE.MeshLambertMaterial({ color: 0x228B22 });
-const ground = new THREE.Mesh(groundGeo, groundMat);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), materials.ground);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// Roads
-function createRoad(x, z, width, length, rotationY = 0) {
-  const roadGeo = new THREE.PlaneGeometry(width, length);
-  const roadMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-  const road = new THREE.Mesh(roadGeo, roadMat);
+function createRoad(x, z, w, l, rot = 0) {
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(w, l), materials.road);
   road.rotation.x = -Math.PI / 2;
-  road.rotation.z = rotationY;
-  road.position.set(x, 0.01, z);
+  road.rotation.z = rot;
+  road.position.set(x, 0.02, z);
   road.receiveShadow = true;
   scene.add(road);
-  // White lines
-  const lineGeo = new THREE.PlaneGeometry(0.2, length);
-  const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const line = new THREE.Mesh(lineGeo, lineMat);
+  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.15, l), materials.line);
   line.rotation.x = -Math.PI / 2;
-  line.rotation.z = rotationY;
-  line.position.set(x, 0.02, z);
+  line.rotation.z = rot;
+  line.position.set(x, 0.03, z);
   scene.add(line);
 }
+createRoad(0, -55, 12, 140);
+createRoad(0, 5, 12, 120);
+createRoad(0, 42, 6, 50, Math.PI / 2);
 
-createRoad(0, -55, 10, 120); // Horizontal north road
-createRoad(0, 5, 10, 100);   // Horizontal middle road
-createRoad(0, 40, 5, 40, Math.PI / 2); // Vertical road
-
-// Building helper
-function createBuilding(x, z, w, d, h, color, name, interiorFunc = null) {
+// Premium building factory with consistent materials
+function createPremiumBuilding(x, z, w, d, h, name, interior = null, wallMat = materials.wall) {
   const group = new THREE.Group();
   group.position.set(x, 0, z);
-  group.userData = { name, type: 'building' };
+  group.userData = { name };
 
-  // Exterior walls
-  const wallMat = new THREE.MeshLambertMaterial({ color });
-  const wallGeo = new THREE.BoxGeometry(w, h, 0.2);
-  // Front
+  const wallGeo = new THREE.BoxGeometry(w, h, 0.15);
+  const sideGeo = new THREE.BoxGeometry(0.15, h, d);
+
   const front = new THREE.Mesh(wallGeo, wallMat);
-  front.position.set(0, h/2, d/2);
+  front.position.set(0, h / 2, d / 2);
   front.castShadow = true;
+  front.receiveShadow = true;
   group.add(front);
-  // Back
+
   const back = new THREE.Mesh(wallGeo, wallMat);
-  back.position.set(0, h/2, -d/2);
+  back.position.set(0, h / 2, -d / 2);
   back.castShadow = true;
   group.add(back);
-  // Sides
-  const sideGeo = new THREE.BoxGeometry(0.2, h, d);
+
   const left = new THREE.Mesh(sideGeo, wallMat);
-  left.position.set(-w/2, h/2, 0);
+  left.position.set(-w / 2, h / 2, 0);
   left.castShadow = true;
   group.add(left);
+
   const right = new THREE.Mesh(sideGeo, wallMat);
-  right.position.set(w/2, h/2, 0);
+  right.position.set(w / 2, h / 2, 0);
   right.castShadow = true;
   group.add(right);
 
   // Roof
-  const roofGeo = new THREE.BoxGeometry(w + 0.5, 0.3, d + 0.5);
-  const roofMat = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
-  const roof = new THREE.Mesh(roofGeo, roofMat);
-  roof.position.y = h + 0.15;
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(w + 0.4, 0.25, d + 0.4), materials.roof);
+  roof.position.y = h + 0.12;
   roof.castShadow = true;
   group.add(roof);
 
-  // Floor interior
-  const floorGeo = new THREE.PlaneGeometry(w - 0.4, d - 0.4);
-  const floorMat = new THREE.MeshLambertMaterial({ color: 0xD2B48C });
-  const floor = new THREE.Mesh(floorGeo, floorMat);
+  // Interior floor
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.3, d - 0.3), new THREE.MeshStandardMaterial({ color: 0xc8b89a, roughness: 0.8 }));
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = 0.05;
   floor.receiveShadow = true;
   group.add(floor);
 
-  // Door opening (remove part of front by not adding solid, or simple door mesh)
-  const doorMat = new THREE.MeshLambertMaterial({ color: 0x654321 });
-  const door = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.2, 0.1), doorMat);
-  door.position.set(0, 1.1, d/2 + 0.05);
+  // Door
+  const door = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.2, 0.08), materials.darkWood);
+  door.position.set(0, 1.1, d / 2 + 0.04);
+  door.castShadow = true;
   group.add(door);
 
-  // Sign
-  const signGeo = new THREE.PlaneGeometry(4, 1);
-  const signMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const sign = new THREE.Mesh(signGeo, signMat);
-  sign.position.set(0, h - 0.5, d/2 + 0.1);
-  group.add(sign);
+  // Windows (consistent)
+  const winGeo = new THREE.PlaneGeometry(1.2, 1.0);
+  const winPositions = [[-w * 0.3, h * 0.6, d / 2 + 0.08], [w * 0.3, h * 0.6, d / 2 + 0.08]];
+  winPositions.forEach(p => {
+    const win = new THREE.Mesh(winGeo, materials.glass);
+    win.position.set(...p);
+    group.add(win);
+  });
 
-  if (interiorFunc) interiorFunc(group, w, d, h);
-
+  if (interior) interior(group, w, d, h);
   scene.add(group);
   return group;
 }
 
-// Specific interiors
+// Goat interior — 10 identical seats
 function goatInterior(group, w, d, h) {
-  // 10 trading seats: 2 rows of 5 desks
-  const deskMat = new THREE.MeshLambertMaterial({ color: 0x4a4a4a });
-  const chairMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-  const monitorMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
-  for (let row = 0; row < 2; row++) {
-    for (let col = 0; col < 5; col++) {
-      const dx = (col - 2) * 2.5;
-      const dz = (row - 0.5) * 3;
-      // Desk
-      const desk = new THREE.Mesh(new THREE.BoxGeometry(2, 0.8, 1), deskMat);
-      desk.position.set(dx, 0.4, dz);
+  for (let r = 0; r < 2; r++) {
+    for (let c = 0; c < 5; c++) {
+      const dx = (c - 2) * 2.6;
+      const dz = (r - 0.5) * 3.2;
+      const desk = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.75, 1.1), materials.desk);
+      desk.position.set(dx, 0.38, dz);
       desk.castShadow = true;
       group.add(desk);
-      // Chair
-      const chair = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.6), chairMat);
-      chair.position.set(dx, 0.25, dz + 1);
+
+      const chair = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.45, 0.55), materials.chair);
+      chair.position.set(dx, 0.22, dz + 1.1);
       chair.castShadow = true;
       group.add(chair);
-      // Monitor
-      const mon = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 0.05), monitorMat);
-      mon.position.set(dx, 1.1, dz - 0.4);
+
+      const mon = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.65, 0.04), materials.monitor);
+      mon.position.set(dx, 1.05, dz - 0.45);
+      mon.userData = { type: 'seat', seatNum: r * 5 + c + 1 };
       group.add(mon);
-      // Seat label
-      mon.userData = { type: 'seat', seatNum: row * 5 + col + 1 };
     }
   }
-  // Trading station sign inside
-  const label = new THREE.Mesh(new THREE.PlaneGeometry(6, 1), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
-  label.position.set(0, 3, -d/2 + 0.5);
-  group.add(label);
 }
 
-function propShopInterior(group, w, d, h) {
-  // Catalogue shelves with account cards
-  const shelfMat = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+// Prop shop interior — catalogue cards
+function propInterior(group, w, d, h) {
   accounts.forEach((acc, i) => {
     const col = i % 5;
     const row = Math.floor(i / 5);
-    const sx = (col - 2) * 2.2;
-    const sy = 1.5 + row * 1.2;
-    const sz = -d/2 + 1;
-    // Card mesh
-    const card = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1, 0.1), new THREE.MeshLambertMaterial({ color: 0x2a5a8a }));
-    card.position.set(sx, sy, sz);
+    const card = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.1, 0.06), materials.card);
+    card.position.set((col - 2) * 2.3, 1.4 + row * 1.3, -d / 2 + 1.2);
     card.userData = { type: 'account', account: acc };
     card.castShadow = true;
     group.add(card);
-    // Price text plane (simple colored)
-    const priceSign = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.4), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-    priceSign.position.set(sx, sy - 0.6, sz + 0.06);
-    group.add(priceSign);
   });
-  // Cart area
-  const cartDesk = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 1), new THREE.MeshLambertMaterial({ color: 0x666666 }));
-  cartDesk.position.set(0, 0.5, d/2 - 1);
+  const cartDesk = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.9, 1.0), materials.desk);
+  cartDesk.position.set(0, 0.45, d / 2 - 1.2);
   cartDesk.userData = { type: 'cart-desk' };
   group.add(cartDesk);
 }
 
-function simpleInterior(group, w, d, h, furnitureColor = 0xaaaaaa) {
-  // Basic table and chairs
-  const table = new THREE.Mesh(new THREE.BoxGeometry(2, 0.8, 1), new THREE.MeshLambertMaterial({ color: furnitureColor }));
-  table.position.set(0, 0.4, 0);
+function simpleInterior(group) {
+  const table = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.7, 0.9), materials.wood);
+  table.position.set(0, 0.35, 0);
   table.castShadow = true;
   group.add(table);
-  for (let i = 0; i < 2; i++) {
-    const chair = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshLambertMaterial({ color: 0x555555 }));
-    chair.position.set((i - 0.5) * 1.5, 0.25, 1);
-    group.add(chair);
-  }
+  const chair1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.45, 0.5), materials.chair);
+  chair1.position.set(-0.7, 0.22, 0.8);
+  group.add(chair1);
+  const chair2 = chair1.clone();
+  chair2.position.set(0.7, 0.22, 0.8);
+  group.add(chair2);
 }
 
-// Create buildings matching sketch
-// North row (top of sketch)
-createBuilding(-40, -80, 18, 12, 4, 0x8B4513, "Goat Trading Station", goatInterior);
-createBuilding(-15, -80, 12, 10, 4, 0x4169E1, "Prop Firm Shop", propShopInterior);
-createBuilding(10, -80, 15, 12, 3, 0x228B22, "Open Garden", (g, w, d) => {
-  // Trees and benches
-  for (let i = 0; i < 4; i++) {
-    const tree = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 3), new THREE.MeshLambertMaterial({ color: 0x8B4513 }));
-    tree.position.set((i - 1.5) * 3, 1.5, 0);
-    g.add(tree);
-    const foliage = new THREE.Mesh(new THREE.SphereGeometry(1.5), new THREE.MeshLambertMaterial({ color: 0x006400 }));
-    foliage.position.set((i - 1.5) * 3, 3.5, 0);
+// Buildings — consistent materials, premium scale
+createPremiumBuilding(-42, -78, 20, 14, 4.5, "Goat", goatInterior);
+createPremiumBuilding(-16, -78, 14, 12, 4.2, "Prop Shop", propInterior, materials.wallAlt);
+createPremiumBuilding(12, -78, 16, 13, 3.8, "Garden", (g) => {
+  for (let i = 0; i < 5; i++) {
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 2.8), materials.darkWood);
+    trunk.position.set((i - 2) * 2.8, 1.4, 0);
+    trunk.castShadow = true;
+    g.add(trunk);
+    const foliage = new THREE.Mesh(new THREE.SphereGeometry(1.4), new THREE.MeshStandardMaterial({ color: 0x1a4a1a, roughness: 0.9 }));
+    foliage.position.set((i - 2) * 2.8, 3.2, 0);
+    foliage.castShadow = true;
     g.add(foliage);
   }
 });
-createBuilding(35, -80, 12, 10, 4, 0xFF6347, "Restaurant", (g) => simpleInterior(g, 12, 10, 4, 0x8B4513));
+createPremiumBuilding(36, -78, 13, 11, 4.2, "Restaurant", simpleInterior);
 
-// Middle row
-createBuilding(-45, -25, 12, 10, 3.5, 0xDEB887, "House", (g) => simpleInterior(g));
-createBuilding(-20, -25, 15, 12, 5, 0x4682B4, "Hotel", (g, w, d, h) => {
-  simpleInterior(g);
-  // Extra floors simple
-  const floor2 = new THREE.Mesh(new THREE.BoxGeometry(w-0.5, 0.1, d-0.5), new THREE.MeshLambertMaterial({ color: 0xcccccc }));
-  floor2.position.y = 2.5;
-  g.add(floor2);
-});
-createBuilding(5, -25, 12, 10, 6, 0xFFFFFF, "Church", (g) => {
-  // Pews
-  for (let i = 0; i < 4; i++) {
-    const pew = new THREE.Mesh(new THREE.BoxGeometry(8, 0.5, 0.8), new THREE.MeshLambertMaterial({ color: 0x8B4513 }));
-    pew.position.set(0, 0.25, -3 + i * 1.5);
+createPremiumBuilding(-46, -24, 13, 11, 3.8, "House", simpleInterior);
+createPremiumBuilding(-22, -24, 16, 13, 5.2, "Hotel", simpleInterior, materials.wallAlt);
+createPremiumBuilding(4, -24, 13, 11, 6.5, "Church", (g) => {
+  for (let i = 0; i < 5; i++) {
+    const pew = new THREE.Mesh(new THREE.BoxGeometry(9, 0.4, 0.7), materials.darkWood);
+    pew.position.set(0, 0.2, -3.5 + i * 1.4);
+    pew.castShadow = true;
     g.add(pew);
   }
 });
-createBuilding(25, -25, 8, 8, 3.5, 0xD2691E, "Coffee Shop", (g) => simpleInterior(g, 8, 8, 3.5, 0xA0522D));
-createBuilding(40, -25, 12, 10, 5, 0xF5F5DC, "Mosque", (g) => {
-  // Simple prayer hall
-  const carpet = new THREE.Mesh(new THREE.PlaneGeometry(10, 8), new THREE.MeshLambertMaterial({ color: 0x006400 }));
+createPremiumBuilding(24, -24, 9, 9, 3.6, "Coffee", simpleInterior);
+createPremiumBuilding(40, -24, 13, 11, 5.0, "Mosque", (g) => {
+  const carpet = new THREE.Mesh(new THREE.PlaneGeometry(11, 9), new THREE.MeshStandardMaterial({ color: 0x0a3a0a, roughness: 0.95 }));
   carpet.rotation.x = -Math.PI / 2;
-  carpet.position.y = 0.1;
+  carpet.position.y = 0.08;
   g.add(carpet);
 });
 
-// Bottom: Car dealer and House equip
-createBuilding(-30, 30, 20, 15, 4, 0x1E90FF, "Car Dealer Shop", (g) => {
-  // Simple cars
-  for (let i = 0; i < 3; i++) {
+createPremiumBuilding(-32, 32, 22, 16, 4.2, "Car Dealer", (g) => {
+  const colors = [0xcc0000, 0x0044cc, 0x00aa44];
+  colors.forEach((col, i) => {
     const car = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 1.5), new THREE.MeshLambertMaterial({ color: [0xff0000, 0x0000ff, 0x00ff00][i] }));
-    body.position.y = 0.5;
+    const body = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.9, 1.6), new THREE.MeshPhysicalMaterial({ color: col, roughness: 0.15, metalness: 0.85, clearcoat: 0.6 }));
+    body.position.y = 0.55;
+    body.castShadow = true;
     car.add(body);
-    const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16);
-    for (let wx of [-1, 1]) for (let wz of [-0.6, 0.6]) {
-      const wheel = new THREE.Mesh(wheelGeo, new THREE.MeshLambertMaterial({ color: 0x111111 }));
-      wheel.rotation.z = Math.PI / 2;
-      wheel.position.set(wx, 0.3, wz);
-      car.add(wheel);
-    }
-    car.position.set((i - 1) * 5, 0, 0);
+    const wheelGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.22, 16);
+    [[-1.1, -0.7], [1.1, -0.7], [-1.1, 0.7], [1.1, 0.7]].forEach(([wx, wz]) => {
+      const w = new THREE.Mesh(wheelGeo, materials.metal);
+      w.rotation.z = Math.PI / 2;
+      w.position.set(wx, 0.32, wz);
+      car.add(w);
+    });
+    car.position.set((i - 1) * 5.5, 0, 0);
     g.add(car);
-  }
+  });
 });
-createBuilding(25, 30, 18, 12, 4, 0x32CD32, "House Equip Shop", (g) => {
-  // Shelves
+createPremiumBuilding(26, 32, 18, 13, 4.0, "House Equip", (g) => {
   for (let i = 0; i < 3; i++) {
-    const shelf = new THREE.Mesh(new THREE.BoxGeometry(12, 0.2, 1), new THREE.MeshLambertMaterial({ color: 0x8B4513 }));
-    shelf.position.set(0, 1 + i * 1, -2);
+    const shelf = new THREE.Mesh(new THREE.BoxGeometry(14, 0.12, 0.8), materials.wood);
+    shelf.position.set(0, 1.1 + i * 1.1, -2.2);
+    shelf.castShadow = true;
     g.add(shelf);
   }
 });
 
-// Estates: 6x6 houses
+// Estates: exact duplicates
+function createEstateHouse() {
+  const group = new THREE.Group();
+  const w = 7, d = 7, h = 3.4;
+  const wallMat = materials.wall;
+
+  const wallGeo = new THREE.BoxGeometry(w, h, 0.15);
+  const sideGeo = new THREE.BoxGeometry(0.15, h, d);
+
+  [[0, h/2, d/2], [0, h/2, -d/2]].forEach(pos => {
+    const wall = new THREE.Mesh(wallGeo, wallMat);
+    wall.position.set(...pos);
+    wall.castShadow = true;
+    wall.receiveShadow = true;
+    group.add(wall);
+  });
+  [[-w/2, h/2, 0], [w/2, h/2, 0]].forEach(pos => {
+    const wall = new THREE.Mesh(sideGeo, wallMat);
+    wall.position.set(...pos);
+    wall.castShadow = true;
+    group.add(wall);
+  });
+
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(w + 0.4, 0.25, d + 0.4), materials.roof);
+  roof.position.y = h + 0.12;
+  roof.castShadow = true;
+  group.add(roof);
+
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.3, d - 0.3), new THREE.MeshStandardMaterial({ color: 0xc8b89a, roughness: 0.8 }));
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = 0.05;
+  group.add(floor);
+
+  const door = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.0, 0.08), materials.darkWood);
+  door.position.set(0, 1.0, d / 2 + 0.04);
+  group.add(door);
+
+  simpleInterior(group);
+  return group;
+}
+
 for (let i = 0; i < 6; i++) {
   for (let j = 0; j < 6; j++) {
-    const hx = -40 + i * 8;
-    const hz = 70 + j * 8;
-    createBuilding(hx, hz, 6, 6, 3, 0xF4A460, `Estate House ${i*6 + j + 1}`, (g) => simpleInterior(g, 6, 6, 3));
+    const house = createEstateHouse();
+    house.position.set(-42 + i * 9, 0, 72 + j * 9);
+    scene.add(house);
   }
 }
 
-// Interaction raycaster
+// Raycast interaction
 const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-let intersected = null;
+const pointer = new THREE.Vector2();
 
-function handleInteraction() {
-  if (!controls.isLocked) return;
-  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-  const intersects = raycaster.intersectObjects(scene.children, true);
-  if (intersects.length > 0) {
-    const obj = intersects[0].object;
-    if (obj.userData && obj.userData.type === 'account') {
-      showAccountModal(obj.userData.account);
-    } else if (obj.userData && obj.userData.type === 'cart-desk') {
-      showCart();
-    } else if (obj.userData && obj.userData.seatNum) {
-      alert(`Trading seat ${obj.userData.seatNum} - Ready for trading simulation!`);
-    }
+function onPointerDown(event) {
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(scene.children, true);
+  if (hits.length) {
+    const obj = hits[0].object;
+    if (obj.userData?.type === 'account') showAccountModal(obj.userData.account);
+    else if (obj.userData?.type === 'cart-desk') showCart();
+    else if (obj.userData?.seatNum) console.log('Seat', obj.userData.seatNum);
   }
 }
+renderer.domElement.addEventListener('pointerdown', onPointerDown);
 
 function showAccountModal(acc) {
   currentAccount = acc;
   document.getElementById('modal-title').textContent = acc.name;
-  document.getElementById('modal-desc').textContent = `${acc.desc} | Type: ${acc.type} | Target: ${acc.target} | DD: ${acc.dailyDD}/${acc.maxDD} | Split: ${acc.split}`;
+  document.getElementById('modal-desc').textContent = `${acc.desc} · ${acc.type} · ${acc.target} · ${acc.dd}`;
   document.getElementById('modal-price').textContent = acc.price;
   document.getElementById('account-modal').style.display = 'block';
 }
-
 function showCart() {
   const ul = document.getElementById('cart-items');
   ul.innerHTML = '';
   let total = 0;
   cart.forEach(item => {
     const li = document.createElement('li');
-    li.textContent = `${item.name} - $${item.price}`;
+    li.textContent = `${item.name} — $${item.price}`;
     ul.appendChild(li);
     total += item.price;
   });
@@ -367,51 +370,25 @@ function showCart() {
   document.getElementById('cart-panel').style.display = 'block';
 }
 
-document.getElementById('add-to-cart').addEventListener('click', () => {
-  if (currentAccount && !cart.find(c => c.id === currentAccount.id)) {
-    cart.push(currentAccount);
-    alert(`${currentAccount.name} added to cart!`);
-  }
+document.getElementById('add-to-cart').onclick = () => {
+  if (currentAccount && !cart.some(c => c.id === currentAccount.id)) cart.push(currentAccount);
   document.getElementById('account-modal').style.display = 'none';
-});
-document.getElementById('buy-now').addEventListener('click', () => {
+};
+document.getElementById('buy-now').onclick = () => {
   if (currentAccount) window.open(currentAccount.link, '_blank');
   document.getElementById('account-modal').style.display = 'none';
-});
-document.getElementById('close-modal').addEventListener('click', () => {
-  document.getElementById('account-modal').style.display = 'none';
-});
-document.getElementById('checkout-btn').addEventListener('click', () => {
-  if (cart.length === 0) { alert('Cart empty'); return; }
+};
+document.getElementById('close-modal').onclick = () => document.getElementById('account-modal').style.display = 'none';
+document.getElementById('checkout-btn').onclick = () => {
   cart.forEach(item => window.open(item.link, '_blank'));
-  alert('Opened official purchase pages. Prices may vary; verify on goatfundedtrader.com');
   cart = [];
   document.getElementById('cart-panel').style.display = 'none';
-});
-document.getElementById('close-cart').addEventListener('click', () => {
-  document.getElementById('cart-panel').style.display = 'none';
-});
+};
+document.getElementById('close-cart').onclick = () => document.getElementById('cart-panel').style.display = 'none';
 
-// Animation loop
-const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
-  const delta = clock.getDelta();
-
-  if (controls.isLocked) {
-    velocity.x -= velocity.x * 10.0 * delta;
-    velocity.z -= velocity.z * 10.0 * delta;
-    direction.z = Number(moveState.forward) - Number(moveState.backward);
-    direction.x = Number(moveState.right) - Number(moveState.left);
-    direction.normalize();
-    if (moveState.forward || moveState.backward) velocity.z -= direction.z * 40.0 * delta;
-    if (moveState.left || moveState.right) velocity.x -= direction.x * 40.0 * delta;
-    controls.moveRight(-velocity.x * delta);
-    controls.moveForward(-velocity.z * delta);
-    // Keep on ground
-    if (camera.position.y < 1.7) camera.position.y = 1.7;
-  }
-
+  controls.update();
   renderer.render(scene, camera);
 }
 animate();
@@ -421,5 +398,3 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-console.log('3D Virtual Town loaded. Click to lock pointer and explore. Goat has 10 trading seats. Prop shop has catalogue of Goat Funded Trader accounts with cart and real purchase links.');

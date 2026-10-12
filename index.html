@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Asset - Virtual Town: Goat Trading Station & Prop Shop</title>
+  <title>Premium 3D Town</title>
   <link rel="stylesheet" href="style.css">
   <script type="importmap">
   {
@@ -15,27 +15,20 @@
   </script>
 </head>
 <body>
-  <div id="info">
-    <h1>Virtual Town - 1 Player Explorer</h1>
-    <p>Click to start | WASD to move | Mouse to look | Esc to unlock | E to interact</p>
-    <p>Explore: Goat Trading Station (10 seats), Prop Firm Shop (catalogue + cart), and more.</p>
-  </div>
   <div id="ui">
-    <div id="crosshair">+</div>
-    <div id="interaction-hint" style="display:none;">Press E to interact</div>
     <div id="cart-panel" style="display:none;">
-      <h3>Prop Shop Cart</h3>
+      <h3>Cart</h3>
       <ul id="cart-items"></ul>
       <p>Total: $<span id="cart-total">0</span></p>
-      <button id="checkout-btn">Proceed to Purchase (opens official links)</button>
+      <button id="checkout-btn">Checkout</button>
       <button id="close-cart">Close</button>
     </div>
     <div id="account-modal" style="display:none;">
       <h2 id="modal-title"></h2>
       <p id="modal-desc"></p>
-      <p>Price: $<span id="modal-price"></span> (prices approx., check official site)</p>
-      <button id="add-to-cart">Add to Cart</button>
-      <button id="buy-now">Buy Now (official link)</button>
+      <p>$<span id="modal-price"></span></p>
+      <button id="add-to-cart">Add</button>
+      <button id="buy-now">Buy</button>
       <button id="close-modal">Close</button>
     </div>
   </div>

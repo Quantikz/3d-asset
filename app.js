@@ -43,8 +43,7 @@ scene.background = new THREE.Color(0x87ceeb);
 scene.fog = new THREE.Fog(0x87ceeb, 120, 350);
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 600);
-camera.position.set(5, 25, 45);
-controls.target.set(5, 2, 0);
+camera.position.set(5, 28, 50);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -52,37 +51,38 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.25;
+renderer.toneMappingExposure = 1.4;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
 
 // Bright daytime lighting
-const hemi = new THREE.HemisphereLight(0x87ceeb, 0x4a7c3f, 0.7);
+const hemi = new THREE.HemisphereLight(0xb0e0ff, 0x5a8c4f, 0.85);
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xfff8e8, 1.6);
-sun.position.set(80, 120, 50);
+const sun = new THREE.DirectionalLight(0xfff8e0, 1.8);
+sun.position.set(70, 100, 40);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.near = 1;
-sun.shadow.camera.far = 300;
-sun.shadow.camera.left = -100;
-sun.shadow.camera.right = 100;
-sun.shadow.camera.top = 100;
-sun.shadow.camera.bottom = -100;
+sun.shadow.camera.far = 250;
+sun.shadow.camera.left = -80;
+sun.shadow.camera.right = 80;
+sun.shadow.camera.top = 80;
+sun.shadow.camera.bottom = -80;
 sun.shadow.bias = -0.0005;
 scene.add(sun);
-const fill = new THREE.DirectionalLight(0xc0d8ff, 0.4);
-fill.position.set(-50, 40, -40);
+const fill = new THREE.DirectionalLight(0xd0e8ff, 0.5);
+fill.position.set(-40, 30, -30);
 scene.add(fill);
-const ambient = new THREE.AmbientLight(0xffffff, 0.25);
+const ambient = new THREE.AmbientLight(0xffffff, 0.35);
 scene.add(ambient);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.maxPolarAngle = Math.PI * 0.45;
-controls.minDistance = 20;
-controls.maxDistance = 220;
-controls.target.set(0, 2, 0);
+controls.minDistance = 15;
+controls.maxDistance = 180;
+controls.target.set(5, 3, 0);
 
 // Simple ground and one road
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), materials.ground);

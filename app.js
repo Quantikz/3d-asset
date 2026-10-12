@@ -43,7 +43,8 @@ scene.background = new THREE.Color(0x87ceeb);
 scene.fog = new THREE.Fog(0x87ceeb, 120, 350);
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 600);
-camera.position.set(0, 55, 110);
+camera.position.set(5, 25, 45);
+controls.target.set(5, 2, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -83,28 +84,18 @@ controls.minDistance = 20;
 controls.maxDistance = 220;
 controls.target.set(0, 2, 0);
 
-// Ground
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), materials.ground);
+// Simple ground and one road
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), materials.ground);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-function createRoad(x, z, w, l, rot = 0) {
-  const road = new THREE.Mesh(new THREE.PlaneGeometry(w, l), materials.road);
-  road.rotation.x = -Math.PI / 2;
-  road.rotation.z = rot;
-  road.position.set(x, 0.02, z);
-  road.receiveShadow = true;
-  scene.add(road);
-  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.15, l), materials.line);
-  line.rotation.x = -Math.PI / 2;
-  line.rotation.z = rot;
-  line.position.set(x, 0.03, z);
-  scene.add(line);
-}
-createRoad(0, -55, 12, 140);
-createRoad(0, 5, 12, 120);
-createRoad(0, 42, 6, 50, Math.PI / 2);
+// Single road in front of buildings
+const road = new THREE.Mesh(new THREE.PlaneGeometry(80, 8), materials.road);
+road.rotation.x = -Math.PI / 2;
+road.position.set(5, 0.02, 12);
+road.receiveShadow = true;
+scene.add(road);
 
 // Premium building factory with consistent materials
 function createPremiumBuilding(x, z, w, d, h, name, interior = null, wallMat = materials.wall) {
@@ -223,117 +214,18 @@ function simpleInterior(group) {
   group.add(chair2);
 }
 
-// Buildings — consistent materials, premium scale
-createPremiumBuilding(-42, -78, 20, 14, 4.5, "Goat", goatInterior);
-createPremiumBuilding(-16, -78, 14, 12, 4.2, "Prop Shop", propInterior, materials.wallAlt);
-createPremiumBuilding(12, -78, 16, 13, 3.8, "Garden", (g) => {
-  for (let i = 0; i < 5; i++) {
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 2.8), materials.darkWood);
-    trunk.position.set((i - 2) * 2.8, 1.4, 0);
-    trunk.castShadow = true;
-    g.add(trunk);
-    const foliage = new THREE.Mesh(new THREE.SphereGeometry(1.4), new THREE.MeshStandardMaterial({ color: 0x1a4a1a, roughness: 0.9 }));
-    foliage.position.set((i - 2) * 2.8, 3.2, 0);
-    foliage.castShadow = true;
-    g.add(foliage);
-  }
-});
-createPremiumBuilding(36, -78, 13, 11, 4.2, "Restaurant", simpleInterior);
-
-createPremiumBuilding(-46, -24, 13, 11, 3.8, "House", simpleInterior);
-createPremiumBuilding(-22, -24, 16, 13, 5.2, "Hotel", simpleInterior, materials.wallAlt);
-createPremiumBuilding(4, -24, 13, 11, 6.5, "Church", (g) => {
-  for (let i = 0; i < 5; i++) {
-    const pew = new THREE.Mesh(new THREE.BoxGeometry(9, 0.4, 0.7), materials.darkWood);
-    pew.position.set(0, 0.2, -3.5 + i * 1.4);
-    pew.castShadow = true;
-    g.add(pew);
-  }
-});
-createPremiumBuilding(24, -24, 9, 9, 3.6, "Coffee", simpleInterior);
-createPremiumBuilding(40, -24, 13, 11, 5.0, "Mosque", (g) => {
-  const carpet = new THREE.Mesh(new THREE.PlaneGeometry(11, 9), new THREE.MeshStandardMaterial({ color: 0x0a3a0a, roughness: 0.95 }));
-  carpet.rotation.x = -Math.PI / 2;
-  carpet.position.y = 0.08;
-  g.add(carpet);
-});
-
-createPremiumBuilding(-32, 32, 22, 16, 4.2, "Car Dealer", (g) => {
-  const colors = [0xcc0000, 0x0044cc, 0x00aa44];
-  colors.forEach((col, i) => {
-    const car = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.9, 1.6), new THREE.MeshPhysicalMaterial({ color: col, roughness: 0.15, metalness: 0.85, clearcoat: 0.6 }));
-    body.position.y = 0.55;
-    body.castShadow = true;
-    car.add(body);
-    const wheelGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.22, 16);
-    [[-1.1, -0.7], [1.1, -0.7], [-1.1, 0.7], [1.1, 0.7]].forEach(([wx, wz]) => {
-      const w = new THREE.Mesh(wheelGeo, materials.metal);
-      w.rotation.z = Math.PI / 2;
-      w.position.set(wx, 0.32, wz);
-      car.add(w);
-    });
-    car.position.set((i - 1) * 5.5, 0, 0);
-    g.add(car);
-  });
-});
-createPremiumBuilding(26, 32, 18, 13, 4.0, "House Equip", (g) => {
+// Only 3 buildings: Goat Station, Prop Shop, Warehouse
+createPremiumBuilding(-18, 0, 22, 16, 5, "Goat Trading Station", goatInterior);
+createPremiumBuilding(8, 0, 16, 14, 4.5, "Prop Firm Shop", propInterior, materials.wallAlt);
+createPremiumBuilding(30, 0, 14, 12, 4, "Warehouse", (g) => {
+  // Simple warehouse shelves
   for (let i = 0; i < 3; i++) {
-    const shelf = new THREE.Mesh(new THREE.BoxGeometry(14, 0.12, 0.8), materials.wood);
-    shelf.position.set(0, 1.1 + i * 1.1, -2.2);
+    const shelf = new THREE.Mesh(new THREE.BoxGeometry(10, 0.15, 1.2), materials.wood);
+    shelf.position.set(0, 1.2 + i * 1.2, -2);
     shelf.castShadow = true;
     g.add(shelf);
   }
 });
-
-// Estates: exact duplicates
-function createEstateHouse() {
-  const group = new THREE.Group();
-  const w = 7, d = 7, h = 3.4;
-  const wallMat = materials.wall;
-
-  const wallGeo = new THREE.BoxGeometry(w, h, 0.15);
-  const sideGeo = new THREE.BoxGeometry(0.15, h, d);
-
-  [[0, h/2, d/2], [0, h/2, -d/2]].forEach(pos => {
-    const wall = new THREE.Mesh(wallGeo, wallMat);
-    wall.position.set(...pos);
-    wall.castShadow = true;
-    wall.receiveShadow = true;
-    group.add(wall);
-  });
-  [[-w/2, h/2, 0], [w/2, h/2, 0]].forEach(pos => {
-    const wall = new THREE.Mesh(sideGeo, wallMat);
-    wall.position.set(...pos);
-    wall.castShadow = true;
-    group.add(wall);
-  });
-
-  const roof = new THREE.Mesh(new THREE.BoxGeometry(w + 0.4, 0.25, d + 0.4), materials.roof);
-  roof.position.y = h + 0.12;
-  roof.castShadow = true;
-  group.add(roof);
-
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.3, d - 0.3), new THREE.MeshStandardMaterial({ color: 0xc8b89a, roughness: 0.8 }));
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = 0.05;
-  group.add(floor);
-
-  const door = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.0, 0.08), materials.darkWood);
-  door.position.set(0, 1.0, d / 2 + 0.04);
-  group.add(door);
-
-  simpleInterior(group);
-  return group;
-}
-
-for (let i = 0; i < 6; i++) {
-  for (let j = 0; j < 6; j++) {
-    const house = createEstateHouse();
-    house.position.set(-42 + i * 9, 0, 72 + j * 9);
-    scene.add(house);
-  }
-}
 
 // Raycast interaction
 const raycaster = new THREE.Raycaster();

@@ -17,31 +17,33 @@ const accounts = [
 let cart = [];
 let currentAccount = null;
 
-// Shared premium materials
+// Shared premium materials - brighter, richer
 const materials = {
-  wall: new THREE.MeshStandardMaterial({ color: 0xf5f0e8, roughness: 0.65, metalness: 0.05 }),
-  wallAlt: new THREE.MeshStandardMaterial({ color: 0xe8e0d5, roughness: 0.6, metalness: 0.05 }),
-  roof: new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.8, metalness: 0.1 }),
-  glass: new THREE.MeshPhysicalMaterial({ color: 0x88ccff, roughness: 0.05, metalness: 0.1, transmission: 0.9, thickness: 0.2, transparent: true }),
-  wood: new THREE.MeshStandardMaterial({ color: 0x8b6914, roughness: 0.7, metalness: 0.05 }),
-  darkWood: new THREE.MeshStandardMaterial({ color: 0x4a3010, roughness: 0.75, metalness: 0.05 }),
-  metal: new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.3, metalness: 0.8 }),
-  ground: new THREE.MeshStandardMaterial({ color: 0x2d4a2d, roughness: 0.9, metalness: 0.0 }),
-  road: new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85, metalness: 0.1 }),
-  line: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-  desk: new THREE.MeshStandardMaterial({ color: 0x2c2c2c, roughness: 0.4, metalness: 0.6 }),
-  monitor: new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.7, emissive: 0x112244, emissiveIntensity: 0.3 }),
-  chair: new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6, metalness: 0.2 }),
-  card: new THREE.MeshStandardMaterial({ color: 0x1e3a5f, roughness: 0.3, metalness: 0.4 }),
-  carBody: new THREE.MeshPhysicalMaterial({ color: 0xcc0000, roughness: 0.2, metalness: 0.8, clearcoat: 0.5, clearcoatRoughness: 0.1 })
+  wall: new THREE.MeshStandardMaterial({ color: 0xf8f4ee, roughness: 0.55, metalness: 0.02 }),
+  wallAlt: new THREE.MeshStandardMaterial({ color: 0xf0e6d8, roughness: 0.5, metalness: 0.02 }),
+  wallWarm: new THREE.MeshStandardMaterial({ color: 0xf5e6d3, roughness: 0.5, metalness: 0.02 }),
+  roof: new THREE.MeshStandardMaterial({ color: 0x4a3728, roughness: 0.7, metalness: 0.05 }),
+  roofDark: new THREE.MeshStandardMaterial({ color: 0x2c2416, roughness: 0.75, metalness: 0.05 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0xa8d8ff, roughness: 0.02, metalness: 0.05, transmission: 0.85, thickness: 0.15, transparent: true, opacity: 0.7 }),
+  wood: new THREE.MeshStandardMaterial({ color: 0xa67c52, roughness: 0.6, metalness: 0.02 }),
+  darkWood: new THREE.MeshStandardMaterial({ color: 0x5c3d2e, roughness: 0.65, metalness: 0.02 }),
+  metal: new THREE.MeshStandardMaterial({ color: 0x9a9a9a, roughness: 0.25, metalness: 0.85 }),
+  ground: new THREE.MeshStandardMaterial({ color: 0x4a7c3f, roughness: 0.85, metalness: 0.0 }),
+  road: new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.8, metalness: 0.05 }),
+  line: new THREE.MeshBasicMaterial({ color: 0xf0f0f0 }),
+  desk: new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.35, metalness: 0.5 }),
+  monitor: new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.15, metalness: 0.6, emissive: 0x1a3a5a, emissiveIntensity: 0.4 }),
+  chair: new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.5, metalness: 0.15 }),
+  card: new THREE.MeshStandardMaterial({ color: 0x1a4a7a, roughness: 0.25, metalness: 0.35 }),
+  carBody: new THREE.MeshPhysicalMaterial({ color: 0xcc2222, roughness: 0.15, metalness: 0.8, clearcoat: 0.6, clearcoatRoughness: 0.08 })
 };
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a1520);
-scene.fog = new THREE.FogExp2(0x0a1520, 0.008);
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 120, 350);
 
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 500);
-camera.position.set(0, 40, 80);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 600);
+camera.position.set(0, 55, 110);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -49,35 +51,37 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+renderer.toneMappingExposure = 1.25;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-document.body.appendChild(renderer.domElement);
 
-// Premium lighting
-const hemi = new THREE.HemisphereLight(0x87ceeb, 0x2d4a2d, 0.5);
+// Bright daytime lighting
+const hemi = new THREE.HemisphereLight(0x87ceeb, 0x4a7c3f, 0.7);
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xfff5e0, 1.2);
-sun.position.set(60, 80, 40);
+const sun = new THREE.DirectionalLight(0xfff8e8, 1.6);
+sun.position.set(80, 120, 50);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.near = 1;
-sun.shadow.camera.far = 200;
-sun.shadow.camera.left = -80;
-sun.shadow.camera.right = 80;
-sun.shadow.camera.top = 80;
-sun.shadow.camera.bottom = -80;
+sun.shadow.camera.far = 300;
+sun.shadow.camera.left = -100;
+sun.shadow.camera.right = 100;
+sun.shadow.camera.top = 100;
+sun.shadow.camera.bottom = -100;
+sun.shadow.bias = -0.0005;
 scene.add(sun);
-const fill = new THREE.DirectionalLight(0xa0c0ff, 0.3);
-fill.position.set(-40, 30, -30);
+const fill = new THREE.DirectionalLight(0xc0d8ff, 0.4);
+fill.position.set(-50, 40, -40);
 scene.add(fill);
+const ambient = new THREE.AmbientLight(0xffffff, 0.25);
+scene.add(ambient);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.maxPolarAngle = Math.PI * 0.48;
-controls.minDistance = 15;
-controls.maxDistance = 180;
-controls.target.set(0, 0, 0);
+controls.maxPolarAngle = Math.PI * 0.45;
+controls.minDistance = 20;
+controls.maxDistance = 220;
+controls.target.set(0, 2, 0);
 
 // Ground
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), materials.ground);

@@ -17,25 +17,27 @@ const accounts = [
 let cart = [];
 let currentAccount = null;
 
-// Shared premium materials - brighter, richer
+// Premium materials with richer finishes
 const materials = {
-  wall: new THREE.MeshStandardMaterial({ color: 0xf8f4ee, roughness: 0.55, metalness: 0.02 }),
-  wallAlt: new THREE.MeshStandardMaterial({ color: 0xf0e6d8, roughness: 0.5, metalness: 0.02 }),
-  wallWarm: new THREE.MeshStandardMaterial({ color: 0xf5e6d3, roughness: 0.5, metalness: 0.02 }),
-  roof: new THREE.MeshStandardMaterial({ color: 0x4a3728, roughness: 0.7, metalness: 0.05 }),
-  roofDark: new THREE.MeshStandardMaterial({ color: 0x2c2416, roughness: 0.75, metalness: 0.05 }),
-  glass: new THREE.MeshPhysicalMaterial({ color: 0xa8d8ff, roughness: 0.02, metalness: 0.05, transmission: 0.85, thickness: 0.15, transparent: true, opacity: 0.7 }),
-  wood: new THREE.MeshStandardMaterial({ color: 0xa67c52, roughness: 0.6, metalness: 0.02 }),
-  darkWood: new THREE.MeshStandardMaterial({ color: 0x5c3d2e, roughness: 0.65, metalness: 0.02 }),
-  metal: new THREE.MeshStandardMaterial({ color: 0x9a9a9a, roughness: 0.25, metalness: 0.85 }),
-  ground: new THREE.MeshStandardMaterial({ color: 0x4a7c3f, roughness: 0.85, metalness: 0.0 }),
-  road: new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.8, metalness: 0.05 }),
-  line: new THREE.MeshBasicMaterial({ color: 0xf0f0f0 }),
-  desk: new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.35, metalness: 0.5 }),
-  monitor: new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.15, metalness: 0.6, emissive: 0x1a3a5a, emissiveIntensity: 0.4 }),
-  chair: new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.5, metalness: 0.15 }),
-  card: new THREE.MeshStandardMaterial({ color: 0x1a4a7a, roughness: 0.25, metalness: 0.35 }),
-  carBody: new THREE.MeshPhysicalMaterial({ color: 0xcc2222, roughness: 0.15, metalness: 0.8, clearcoat: 0.6, clearcoatRoughness: 0.08 })
+  wall: new THREE.MeshStandardMaterial({ color: 0xf5f0ea, roughness: 0.45, metalness: 0.02 }),
+  wallAlt: new THREE.MeshStandardMaterial({ color: 0xe8dfd0, roughness: 0.42, metalness: 0.02 }),
+  wallWarm: new THREE.MeshStandardMaterial({ color: 0xf0e4d4, roughness: 0.4, metalness: 0.02 }),
+  roof: new THREE.MeshStandardMaterial({ color: 0x3d2b1f, roughness: 0.65, metalness: 0.08 }),
+  roofEdge: new THREE.MeshStandardMaterial({ color: 0x2a1d14, roughness: 0.7, metalness: 0.05 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0x9fd4ff, roughness: 0.01, metalness: 0.02, transmission: 0.92, thickness: 0.1, transparent: true, opacity: 0.65, ior: 1.45 }),
+  windowFrame: new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.3, metalness: 0.7 }),
+  wood: new THREE.MeshStandardMaterial({ color: 0xb8956a, roughness: 0.55, metalness: 0.02 }),
+  darkWood: new THREE.MeshStandardMaterial({ color: 0x4a3020, roughness: 0.6, metalness: 0.02 }),
+  metal: new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.2, metalness: 0.9 }),
+  ground: new THREE.MeshStandardMaterial({ color: 0x3d6b32, roughness: 0.9, metalness: 0.0 }),
+  sidewalk: new THREE.MeshStandardMaterial({ color: 0xc8c0b8, roughness: 0.7, metalness: 0.0 }),
+  road: new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.75, metalness: 0.05 }),
+  desk: new THREE.MeshStandardMaterial({ color: 0x2e2e2e, roughness: 0.3, metalness: 0.45 }),
+  monitorScreen: new THREE.MeshStandardMaterial({ color: 0x0a1520, roughness: 0.1, metalness: 0.3, emissive: 0x1a4a8a, emissiveIntensity: 0.6 }),
+  monitorBezel: new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4, metalness: 0.5 }),
+  chair: new THREE.MeshStandardMaterial({ color: 0x1f1f1f, roughness: 0.45, metalness: 0.2 }),
+  card: new THREE.MeshStandardMaterial({ color: 0x1a3a5c, roughness: 0.2, metalness: 0.4 }),
+  sign: new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.3, metalness: 0.3 })
 };
 
 const scene = new THREE.Scene();
@@ -97,108 +99,153 @@ road.position.set(5, 0.02, 12);
 road.receiveShadow = true;
 scene.add(road);
 
-// Premium building factory with consistent materials
+// Richer building factory
 function createPremiumBuilding(x, z, w, d, h, name, interior = null, wallMat = materials.wall) {
   const group = new THREE.Group();
   group.position.set(x, 0, z);
   group.userData = { name };
 
-  const wallGeo = new THREE.BoxGeometry(w, h, 0.15);
-  const sideGeo = new THREE.BoxGeometry(0.15, h, d);
-
-  const front = new THREE.Mesh(wallGeo, wallMat);
+  // Main walls
+  const wallThick = 0.18;
+  const front = new THREE.Mesh(new THREE.BoxGeometry(w, h, wallThick), wallMat);
   front.position.set(0, h / 2, d / 2);
   front.castShadow = true;
   front.receiveShadow = true;
   group.add(front);
 
-  const back = new THREE.Mesh(wallGeo, wallMat);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(w, h, wallThick), wallMat);
   back.position.set(0, h / 2, -d / 2);
   back.castShadow = true;
   group.add(back);
 
-  const left = new THREE.Mesh(sideGeo, wallMat);
+  const left = new THREE.Mesh(new THREE.BoxGeometry(wallThick, h, d), wallMat);
   left.position.set(-w / 2, h / 2, 0);
   left.castShadow = true;
   group.add(left);
 
-  const right = new THREE.Mesh(sideGeo, wallMat);
+  const right = new THREE.Mesh(new THREE.BoxGeometry(wallThick, h, d), wallMat);
   right.position.set(w / 2, h / 2, 0);
   right.castShadow = true;
   group.add(right);
 
-  // Roof
-  const roof = new THREE.Mesh(new THREE.BoxGeometry(w + 0.4, 0.25, d + 0.4), materials.roof);
-  roof.position.y = h + 0.12;
+  // Roof with edge trim
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(w + 0.6, 0.3, d + 0.6), materials.roof);
+  roof.position.y = h + 0.15;
   roof.castShadow = true;
   group.add(roof);
+  const roofEdge = new THREE.Mesh(new THREE.BoxGeometry(w + 0.8, 0.12, d + 0.8), materials.roofEdge);
+  roofEdge.position.y = h + 0.05;
+  group.add(roofEdge);
 
   // Interior floor
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.3, d - 0.3), new THREE.MeshStandardMaterial({ color: 0xc8b89a, roughness: 0.8 }));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.4, d - 0.4), new THREE.MeshStandardMaterial({ color: 0xd4c4a8, roughness: 0.7 }));
   floor.rotation.x = -Math.PI / 2;
-  floor.position.y = 0.05;
+  floor.position.y = 0.06;
   floor.receiveShadow = true;
   group.add(floor);
 
-  // Door
-  const door = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.2, 0.08), materials.darkWood);
-  door.position.set(0, 1.1, d / 2 + 0.04);
+  // Door with frame
+  const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.9, 2.4, 0.12), materials.windowFrame);
+  doorFrame.position.set(0, 1.2, d / 2 + 0.02);
+  group.add(doorFrame);
+  const door = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.1, 0.06), materials.darkWood);
+  door.position.set(0, 1.15, d / 2 + 0.08);
   door.castShadow = true;
   group.add(door);
 
-  // Windows (consistent)
-  const winGeo = new THREE.PlaneGeometry(1.2, 1.0);
-  const winPositions = [[-w * 0.3, h * 0.6, d / 2 + 0.08], [w * 0.3, h * 0.6, d / 2 + 0.08]];
-  winPositions.forEach(p => {
-    const win = new THREE.Mesh(winGeo, materials.glass);
-    win.position.set(...p);
-    group.add(win);
+  // Windows with frames (2 on front)
+  const winW = 1.4, winH = 1.1;
+  const winPositions = [[-w * 0.28, h * 0.62], [w * 0.28, h * 0.62]];
+  winPositions.forEach(([wx, wy]) => {
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(winW + 0.12, winH + 0.12, 0.08), materials.windowFrame);
+    frame.position.set(wx, wy, d / 2 + 0.04);
+    group.add(frame);
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(winW, winH), materials.glass);
+    glass.position.set(wx, wy, d / 2 + 0.1);
+    group.add(glass);
   });
+
+  // Building name sign
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(w * 0.6, 0.5, 0.08), materials.sign);
+  sign.position.set(0, h - 0.4, d / 2 + 0.1);
+  group.add(sign);
 
   if (interior) interior(group, w, d, h);
   scene.add(group);
   return group;
 }
 
-// Goat interior — 10 identical seats
+// Goat interior — detailed 10 trading stations
 function goatInterior(group, w, d, h) {
   for (let r = 0; r < 2; r++) {
     for (let c = 0; c < 5; c++) {
-      const dx = (c - 2) * 2.6;
-      const dz = (r - 0.5) * 3.2;
-      const desk = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.75, 1.1), materials.desk);
-      desk.position.set(dx, 0.38, dz);
+      const dx = (c - 2) * 2.8;
+      const dz = (r - 0.5) * 3.4;
+      // Desk
+      const desk = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 1.2), materials.desk);
+      desk.position.set(dx, 0.75, dz);
       desk.castShadow = true;
       group.add(desk);
-
-      const chair = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.45, 0.55), materials.chair);
-      chair.position.set(dx, 0.22, dz + 1.1);
-      chair.castShadow = true;
-      group.add(chair);
-
-      const mon = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.65, 0.04), materials.monitor);
-      mon.position.set(dx, 1.05, dz - 0.45);
-      mon.userData = { type: 'seat', seatNum: r * 5 + c + 1 };
-      group.add(mon);
+      // Desk legs
+      const legGeo = new THREE.BoxGeometry(0.08, 0.7, 0.08);
+      [[-1, -0.5], [1, -0.5], [-1, 0.5], [1, 0.5]].forEach(([lx, lz]) => {
+        const leg = new THREE.Mesh(legGeo, materials.metal);
+        leg.position.set(dx + lx, 0.35, dz + lz);
+        group.add(leg);
+      });
+      // Chair
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.5), materials.chair);
+      seat.position.set(dx, 0.45, dz + 1.2);
+      group.add(seat);
+      const backrest = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.06), materials.chair);
+      backrest.position.set(dx, 0.75, dz + 1.45);
+      group.add(backrest);
+      // Monitor with screen
+      const bezel = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.04), materials.monitorBezel);
+      bezel.position.set(dx, 1.15, dz - 0.5);
+      group.add(bezel);
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.05, 0.55), materials.monitorScreen);
+      screen.position.set(dx, 1.15, dz - 0.47);
+      screen.userData = { type: 'seat', seatNum: r * 5 + c + 1 };
+      group.add(screen);
     }
   }
 }
 
-// Prop shop interior — catalogue cards
+// Prop shop interior — catalogue wall
 function propInterior(group, w, d, h) {
   accounts.forEach((acc, i) => {
     const col = i % 5;
     const row = Math.floor(i / 5);
-    const card = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.1, 0.06), materials.card);
-    card.position.set((col - 2) * 2.3, 1.4 + row * 1.3, -d / 2 + 1.2);
+    const card = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 0.04), materials.card);
+    card.position.set((col - 2) * 2.2, 1.5 + row * 1.25, -d / 2 + 0.8);
     card.userData = { type: 'account', account: acc };
     card.castShadow = true;
     group.add(card);
   });
-  const cartDesk = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.9, 1.0), materials.desk);
-  cartDesk.position.set(0, 0.45, d / 2 - 1.2);
-  cartDesk.userData = { type: 'cart-desk' };
-  group.add(cartDesk);
+  // Checkout counter
+  const counter = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.9, 1.1), materials.desk);
+  counter.position.set(0, 0.45, d / 2 - 1.5);
+  counter.userData = { type: 'cart-desk' };
+  counter.castShadow = true;
+  group.add(counter);
+}
+
+// Warehouse interior
+function warehouseInterior(group, w, d, h) {
+  for (let i = 0; i < 4; i++) {
+    const shelf = new THREE.Mesh(new THREE.BoxGeometry(w - 1, 0.1, 1.0), materials.wood);
+    shelf.position.set(0, 0.8 + i * 0.9, -1.5);
+    shelf.castShadow = true;
+    group.add(shelf);
+    // Shelf supports
+    const support = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.8 + i * 0.9, 0.1), materials.metal);
+    support.position.set(-w / 2 + 0.8, (0.8 + i * 0.9) / 2, -1.5);
+    group.add(support);
+    const support2 = support.clone();
+    support2.position.x = w / 2 - 0.8;
+    group.add(support2);
+  }
 }
 
 function simpleInterior(group) {
@@ -214,18 +261,17 @@ function simpleInterior(group) {
   group.add(chair2);
 }
 
+// Sidewalk in front of buildings
+const sidewalk = new THREE.Mesh(new THREE.PlaneGeometry(70, 4), materials.sidewalk);
+sidewalk.rotation.x = -Math.PI / 2;
+sidewalk.position.set(5, 0.03, 8);
+sidewalk.receiveShadow = true;
+scene.add(sidewalk);
+
 // Only 3 buildings: Goat Station, Prop Shop, Warehouse
-createPremiumBuilding(-18, 0, 22, 16, 5, "Goat Trading Station", goatInterior);
-createPremiumBuilding(8, 0, 16, 14, 4.5, "Prop Firm Shop", propInterior, materials.wallAlt);
-createPremiumBuilding(30, 0, 14, 12, 4, "Warehouse", (g) => {
-  // Simple warehouse shelves
-  for (let i = 0; i < 3; i++) {
-    const shelf = new THREE.Mesh(new THREE.BoxGeometry(10, 0.15, 1.2), materials.wood);
-    shelf.position.set(0, 1.2 + i * 1.2, -2);
-    shelf.castShadow = true;
-    g.add(shelf);
-  }
-});
+createPremiumBuilding(-18, 0, 22, 16, 5.2, "Goat Trading Station", goatInterior);
+createPremiumBuilding(8, 0, 16, 14, 4.8, "Prop Firm Shop", propInterior, materials.wallAlt);
+createPremiumBuilding(30, 0, 14, 12, 4.5, "Warehouse", warehouseInterior, materials.wallWarm);
 
 // Raycast interaction
 const raycaster = new THREE.Raycaster();
